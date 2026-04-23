@@ -1,34 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Admin Panel - Soundboard</title>
-    <style>
-        body { font-family: monospace; background: #111; color: #0f0; padding: 20px; }
-        button { padding: 10px; margin: 5px; background: #333; color: white; border: 1px solid #0f0; cursor: pointer;}
-        button:hover { background: #0f0; color: #000; }
-        .admin-section { border: 1px solid #0f0; padding: 20px; margin-bottom: 20px; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Telemetry Deck</title>
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-    <div id="login-section" class="admin-section">
-        <h2>Admin Login</h2>
-        <input type="email" id="email" placeholder="Admin Email">
-        <input type="password" id="password" placeholder="Password">
-        <button id="login-btn">Login</button>
+    <div id="login-section" class="glass-panel" style="max-width: 400px; text-align: center;">
+        <h2 style="margin-bottom: 20px; color: var(--danger);">RESTRICTED ACCESS</h2>
+        <input type="email" id="email" placeholder="Administrator Email" style="margin-bottom: 15px; width: 100%;">
+        <input type="password" id="password" placeholder="Passcode" style="margin-bottom: 20px; width: 100%;">
+        <button id="login-btn" class="btn-primary" style="width: 100%;">Authenticate</button>
     </div>
 
-    <div id="control-panel" class="admin-section" style="display: none;">
-        <h2>Control Panel</h2>
-        <button id="play-next-btn">Play Next in Queue</button>
-        <button id="stop-all-btn">🛑 STOP CURRENT SOUND</button>
-        <button id="clear-queue-btn">Clear Entire Queue</button>
-        
-        <h3>Current Queue:</h3>
+    <div id="control-panel" class="glass-panel" style="display: none; max-width: 800px;">
+        <header>
+            <div class="sys-title">Command Overview</div>
+            <span id="admin-status" class="status-label" style="color: var(--success);">System Online</span>
+        </header>
+
+        <div class="status-display">
+            <span class="status-label">Active Transmission</span>
+            <span id="admin-np" class="status-track">None</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px;">
+            <button id="play-next-btn" class="btn-secondary">⏭️ Force Next Track</button>
+            <button id="pause-btn" class="btn-secondary">⏸️ Global Pause</button>
+            <button id="resume-btn" class="btn-secondary">▶️ Global Resume</button>
+            <button id="stop-all-btn" class="btn-danger">⏹️ KILL AUDIO</button>
+        </div>
+
+        <div class="control-group"
+            style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; border: 1px solid var(--panel-border);">
+            <input type="text" id="override-link" placeholder="Instant Override URL...">
+            <button id="override-btn" class="btn-danger" style="box-shadow: none;">EXECUTE OVERRIDE</button>
+        </div>
+
+        <header style="margin-top: 30px; padding-bottom: 10px;">
+            <div class="sys-title">Queue Manager</div>
+            <button id="clear-queue-btn" class="btn-danger" style="padding: 10px 15px; font-size: 0.8rem;">Purge
+                Queue</button>
+        </header>
         <ul id="admin-queue-list"></ul>
     </div>
 
     <script type="module" src="admin.js"></script>
 </body>
+
 </html>
