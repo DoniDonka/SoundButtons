@@ -4,190 +4,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soundboard</title>
+    <title>Soundboard Supreme</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
         * {
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            background-color: #0f0f0f;
-            color: #f1f1f1;
-            margin: 0;
-            padding: 0;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #0f0f1a 100%);
+            color: #fff;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
-            min-height: 100vh;
+            align-items: center;
+            overflow-x: hidden;
         }
 
+        /* The Audio Unlock Overlay */
         #join-screen {
             position: fixed;
             inset: 0;
-            background: rgba(15, 15, 15, 0.98);
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(20px);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 100;
+            z-index: 9999;
         }
 
-        .primary-btn {
-            background: #3ea6ff;
-            color: #0f0f0f;
+        .glow-btn {
+            background: linear-gradient(45deg, #00ffcc, #3366ff);
             border: none;
-            padding: 14px 28px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 16px;
+            padding: 20px 40px;
+            border-radius: 50px;
+            font-size: 20px;
+            font-weight: 800;
+            color: #fff;
             cursor: pointer;
-            transition: background 0.2s;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 255, 204, 0.4);
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .primary-btn:hover {
-            background: #65b8ff;
+        .glow-btn:hover {
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 255, 204, 0.6);
         }
 
-        .secondary-btn {
-            background: transparent;
-            color: #f1f1f1;
-            border: 1px solid #555;
-            padding: 10px 20px;
-            border-radius: 20px;
+        /* Main App Glass Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(16px);
+            border-radius: 24px;
+            width: 90%;
+            max-width: 800px;
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 800;
+            text-align: center;
+            background: linear-gradient(45deg, #fff, #888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        /* The Now Playing Visualizer Panel */
+        .now-playing-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 25px;
+            border-left: 4px solid #00ffcc;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .np-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #00ffcc;
+            font-weight: 800;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .np-title {
+            font-size: 24px;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        /* Global Controls for EVERYONE */
+        .global-controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .ctrl-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: 0.2s;
-            flex: 1;
-        }
-
-        .secondary-btn:hover {
-            background: #333;
-        }
-
-        .main-container {
-            width: 100%;
-            max-width: 700px;
-            padding: 40px 20px;
-        }
-
-        .header {
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            margin: 0 0 8px 0;
-        }
-
-        .header p {
-            color: #aaaaaa;
-            margin: 0;
-            font-size: 14px;
-        }
-
-        .card {
-            background: #212121;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 20px;
-            border: 1px solid #333;
-        }
-
-        .now-playing-label {
-            color: #aaaaaa;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-        }
-
-        .now-playing-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: #3ea6ff;
-            word-break: break-all;
-        }
-
-        .controls-row {
             display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            margin-bottom: 15px;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
         }
 
+        .ctrl-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #00ffcc;
+        }
+
+        .ctrl-btn.active-pause {
+            background: rgba(255, 50, 50, 0.2);
+            border-color: #ff3333;
+        }
+
+        /* Input Section */
         .input-group {
             display: flex;
-            gap: 12px;
-            margin-top: 20px;
+            gap: 15px;
         }
 
         input[type="text"] {
             flex: 1;
-            background: #0f0f0f;
-            border: 1px solid #333;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 18px 20px;
+            border-radius: 12px;
             color: white;
-            padding: 14px 16px;
-            border-radius: 8px;
-            font-size: 15px;
+            font-size: 16px;
             outline: none;
+            transition: border 0.3s;
         }
 
         input[type="text"]:focus {
-            border-color: #3ea6ff;
+            border-color: #00ffcc;
         }
 
-        .volume-control {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 15px;
-            color: #aaa;
-            font-size: 14px;
-        }
-
-        input[type="range"] {
-            flex: 1;
+        .add-btn {
+            background: #00ffcc;
+            color: #000;
+            border: none;
+            padding: 0 30px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 16px;
             cursor: pointer;
+            transition: 0.2s;
         }
 
-        .queue-header {
+        .add-btn:hover {
+            background: #fff;
+            box-shadow: 0 0 20px #00ffcc;
+        }
+
+        /* Queue List */
+        .queue-container h3 {
             font-size: 18px;
+            color: #888;
             margin-bottom: 15px;
-            font-weight: 600;
-            border-bottom: 1px solid #333;
-            padding-bottom: 10px;
         }
 
         ul {
             list-style: none;
-            padding: 0;
-            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         li {
-            background: #181818;
-            padding: 16px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            border: 1px solid #2a2a2a;
-            font-size: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
             display: flex;
             align-items: center;
+            gap: 15px;
         }
 
-        li::before {
-            content: "🎵";
-            margin-right: 12px;
-            font-size: 12px;
+        .q-number {
+            color: #555;
+            font-weight: 800;
         }
 
-        /* FIX: Hide player off-screen instead of display: none */
-        #player {
+        .q-title {
+            flex: 1;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* The Trick: Hide the iframe without display: none */
+        .iframe-container {
             position: absolute;
-            left: -9999px;
             width: 1px;
             height: 1px;
+            opacity: 0.01;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: -100;
         }
     </style>
 </head>
@@ -195,45 +234,42 @@
 <body>
 
     <div id="join-screen">
-        <h2 style="margin-bottom: 24px;">Audio Setup Required</h2>
-        <button id="join-btn" class="primary-btn">Connect & Enable Audio</button>
+        <h2 style="margin-bottom: 30px; font-size: 28px; text-align: center;">Browser Audio Check<br><span
+                style="font-size: 16px; color: #888; font-weight: 400;">(Click to sync global volume)</span></h2>
+        <button id="join-btn" class="glow-btn">CONNECT AUDIO ENGINE</button>
     </div>
 
-    <div class="main-container">
-        <div class="header">
-            <h1>Shared Soundboard</h1>
-            <p>Paste a YouTube link to add to the global queue.</p>
-        </div>
+    <div class="glass-card">
+        <h1>SOUNDBOARD SUPREME</h1>
 
-        <div class="card">
-            <div class="now-playing-label">Currently Playing</div>
-            <div class="now-playing-title" id="np-title">Waiting for audio...</div>
+        <div class="now-playing-panel">
+            <span class="np-label">Live Broadcast</span>
+            <div class="np-title" id="np-title">Silence...</div>
 
-            <div class="controls-row">
-                <button id="user-play-pause-btn" class="secondary-btn">⏸️ Pause</button>
-                <button id="user-skip-btn" class="secondary-btn">⏭️ Skip Next</button>
-            </div>
-
-            <div class="volume-control">
-                <span>🔊 Local Volume:</span>
-                <input type="range" id="vol-slider" min="0" max="100" value="100">
-            </div>
-
-            <div class="input-group">
-                <input type="text" id="yt-link" placeholder="Paste YouTube URL here...">
-                <button id="queue-btn" class="primary-btn">Queue Audio</button>
+            <div class="global-controls">
+                <button id="public-play-pause" class="ctrl-btn">⏸️ Pause Global</button>
+                <button id="public-skip" class="ctrl-btn">⏭️ Skip Track</button>
+                <button id="public-stop" class="ctrl-btn">⏹️ Stop All</button>
             </div>
         </div>
 
-        <div class="card">
-            <div class="queue-header">Up Next</div>
+        <div class="input-group">
+            <input type="text" id="yt-link" placeholder="Paste YouTube Link (e.g., https://youtu.be/...)">
+            <button id="queue-btn" class="add-btn">Add to Queue</button>
+        </div>
+
+        <div class="queue-container">
+            <h3>Up Next</h3>
             <ul id="queue-list">
-                <li style="color: #666; justify-content: center;">Queue is empty</li>
+                <li style="justify-content: center; color: #555;">The queue is currently empty.</li>
             </ul>
         </div>
     </div>
 
-    <div id="player"></div>
+    <div class="iframe-container">
+        <div id="player"></div>
+    </div>
+
     <script type="module" src="app.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
 </body>

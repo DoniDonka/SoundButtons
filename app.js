@@ -1,7 +1,7 @@
-// We added set, get, child, and remove to the imports so regular users can control the player
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getDatabase, ref, push, onValue, set, get, child, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
+// YOUR CONFIG
 const firebaseConfig = {
     apiKey: "AIzaSyAfCititqgz6H03Bg3W4bZbTDp4v-WpH6Y",
     authDomain: "soundbuttons-36b5c.firebaseapp.com",
@@ -17,46 +17,54 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 let ytPlayer;
-let isAudioEnabled = false;
-let currentVideoId = null;
-let currentVideoData = null; // Store this globally for the play/pause button
+let audioUnlocked = false;
+let currentVideoData = null;
 
+// The trick: Load a tiny, real video (Me at the zoo) silently to unlock the audio context
 window.onYouTubeIframeAPIReady = function () {
     ytPlayer = new YT.Player('player', {
-        height: '1', width: '1', videoId: '',
-        playerVars: { 'autoplay': 1, 'controls': 0 },
+        height: '200',
+        width: '200',
+        videoId: 'jNQXAC9IVRw',
+        playerVars: { 'autoplay': 0, 'controls': 0, 'disablekb': 1 },
     });
 };
 
+// URL Parser
 function extractVideoID(url) {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(regExp);
+    const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/);
     return (match && match[2].length === 11) ? match[2] : null;
 }
 
+// Title Fetcher
 async function getYouTubeTitle(videoId) {
     try {
         const response = await fetch(`https://noembed.com/embed?dataType=json&url=https://www.youtube.com/watch?v=${videoId}`);
         const data = await response.json();
-        return data.title || "Unknown Audio Track";
-    } catch (e) {
-        return "Unknown Audio Track";
-    }
+        return data.title || "Unknown Audio";
+    } catch (e) { return "Unknown Audio"; }
 }
 
-// Enable Audio
+// THE AUDIO UNLOCKER
 document.getElementById('join-btn').addEventListener('click', () => {
-    isAudioEnabled = true;
-    document.getElementById('join-screen').style.display = 'none';
-    if (ytPlayer && currentVideoId) ytPlayer.playVideo();
+    if (ytPlayer && ytPlayer.playVideo) {
+        ytPlayer.unMute();
+        ytPlayer.setVolume(100);
+        ytPlayer.playVideo(); // Force play
+
+        // Pause it 500ms later so they don't actually hear "Me at the zoo"
+        setTimeout(() => {
+            ytPlayer.pauseVideo();
+            audioUnlocked = true;
+            document.getElementById('join-screen').style.opacity = '0';
+            setTimeout(() => document.getElementById('join-screen').style.display = 'none', 300);
+        }, 500);
+    } else {
+        alert("YouTube API is still loading or is blocked by your network/firewall.");
+    }
 });
 
-// Local Volume Control
-document.getElementById('vol-slider').addEventListener('input', (e) => {
-    if (ytPlayer) ytPlayer.setVolume(e.target.value);
-});
-
-// Queue Button
+// ADD TO QUEUE
 document.getElementById('queue-btn').addEventListener('click', async () => {
     const link = document.getElementById('yt-link').value;
     const videoId = extractVideoID(link);
@@ -64,98 +72,104 @@ document.getElementById('queue-btn').addEventListener('click', async () => {
 
     if (videoId) {
         btn.innerText = "Loading...";
-        btn.disabled = true;
-
         const title = await getYouTubeTitle(videoId);
-        push(ref(db, 'queue'), { videoId: videoId, title: title });
+
+        // If nothing is playing, play immediately instead of queuing
+        get(child(ref(db), 'nowPlaying')).then((snapshot) => {
+            if (!snapshot.exists()) {
+                set(ref(db, 'nowPlaying'), { videoId: videoId, title: title, state: 'playing' });
+            } else {
+                push(ref(db, 'queue'), { videoId: videoId, title: title });
+            }
+        });
 
         document.getElementById('yt-link').value = '';
-        btn.innerText = "Queue Audio";
-        btn.disabled = false;
+        btn.innerText = "Add to Queue";
     } else {
-        alert("Please enter a valid YouTube URL.");
+        alert("Invalid YouTube Link!");
     }
 });
 
-// --- NEW PUBLIC CONTROLS LOGIC ---
+// --- GLOBAL CONTROLS FOR ALL USERS ---
 
-// Play/Pause Toggle for regular users
-document.getElementById('user-play-pause-btn').addEventListener('click', () => {
+document.getElementById('public-play-pause').addEventListener('click', () => {
     if (currentVideoData) {
         const newState = currentVideoData.state === 'playing' ? 'paused' : 'playing';
         set(ref(db, 'nowPlaying'), { ...currentVideoData, state: newState });
     }
 });
 
-// Skip Next for regular users
-document.getElementById('user-skip-btn').addEventListener('click', () => {
+document.getElementById('public-stop').addEventListener('click', () => {
+    remove(ref(db, 'nowPlaying'));
+});
+
+document.getElementById('public-skip').addEventListener('click', () => {
     get(child(ref(db), 'queue')).then((snapshot) => {
         if (snapshot.exists()) {
             const queueData = snapshot.val();
             const firstKey = Object.keys(queueData)[0];
             const nextItem = queueData[firstKey];
 
-            // Push next song to nowPlaying
             set(ref(db, 'nowPlaying'), { videoId: nextItem.videoId, title: nextItem.title, state: 'playing' });
-            // Remove it from the queue
             remove(ref(db, `queue/${firstKey}`));
         } else {
-            // If queue is empty, stop the music
             remove(ref(db, 'nowPlaying'));
         }
     });
 });
 
+// --- REAL-TIME SYNC LOGIC ---
 
-// --- SYNC LOGIC ---
+let currentlyLoadedVideoId = null;
 
-// Sync Now Playing (Fixed the restart bug!)
 onValue(ref(db, 'nowPlaying'), (snapshot) => {
     const data = snapshot.val();
     currentVideoData = data;
     const npTitle = document.getElementById('np-title');
-    const ppBtn = document.getElementById('user-play-pause-btn');
+    const ppBtn = document.getElementById('public-play-pause');
 
-    if (data && isAudioEnabled && ytPlayer) {
+    if (data && audioUnlocked) {
         npTitle.innerText = data.title;
 
-        // Update the button text
-        ppBtn.innerText = data.state === 'paused' ? '▶️ Play' : '⏸️ Pause';
-
-        // Only load a new video if the ID actually changed
-        if (currentVideoId !== data.videoId) {
-            currentVideoId = data.videoId;
+        // Load new video only if it changed
+        if (currentlyLoadedVideoId !== data.videoId) {
+            currentlyLoadedVideoId = data.videoId;
             ytPlayer.loadVideoById(data.videoId);
         }
 
-        // Handle Play/Pause without restarting the song
+        // Handle State Sync
         if (data.state === 'playing') {
             ytPlayer.playVideo();
-        } else if (data.state === 'paused') {
+            ppBtn.innerText = '⏸️ Pause Global';
+            ppBtn.classList.remove('active-pause');
+        } else {
             ytPlayer.pauseVideo();
+            ppBtn.innerText = '▶️ Global Paused';
+            ppBtn.classList.add('active-pause');
         }
 
     } else if (!data) {
-        npTitle.innerText = "Waiting for audio...";
-        ppBtn.innerText = '⏸️ Pause';
-        currentVideoId = null;
-        if (ytPlayer) ytPlayer.stopVideo();
+        npTitle.innerText = "Silence...";
+        ppBtn.innerText = '⏸️ Pause Global';
+        currentlyLoadedVideoId = null;
+        if (ytPlayer && audioUnlocked) ytPlayer.stopVideo();
     }
 });
 
-// Sync Queue UI
 onValue(ref(db, 'queue'), (snapshot) => {
     const queueList = document.getElementById('queue-list');
     queueList.innerHTML = '';
 
     if (!snapshot.exists()) {
-        queueList.innerHTML = '<li style="color: #666; justify-content: center;">Queue is empty</li>';
+        queueList.innerHTML = '<li style="justify-content: center; color: #555;">The queue is currently empty.</li>';
         return;
     }
 
+    let index = 1;
     snapshot.forEach((childSnapshot) => {
         const li = document.createElement('li');
-        li.innerText = childSnapshot.val().title;
+        li.innerHTML = `<span class="q-number">${index}.</span> <span class="q-title">${childSnapshot.val().title}</span>`;
         queueList.appendChild(li);
+        index++;
     });
 });
