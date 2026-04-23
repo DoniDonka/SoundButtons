@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel - Soundboard</title>
+    <style>
+        body { font-family: monospace; background: #111; color: #0f0; padding: 20px; }
+        button { padding: 10px; margin: 5px; background: #333; color: white; border: 1px solid #0f0; cursor: pointer;}
+        button:hover { background: #0f0; color: #000; }
+        .admin-section { border: 1px solid #0f0; padding: 20px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <div id="login-section" class="admin-section">
+        <h2>Admin Login</h2>
+        <input type="email" id="email" placeholder="Admin Email">
+        <input type="password" id="password" placeholder="Password">
+        <button id="login-btn">Login</button>
+    </div>
+
+    <div id="control-panel" class="admin-section" style="display: none;">
+        <h2>Control Panel</h2>
+        <button id="play-next-btn">Play Next in Queue</button>
+        <button id="stop-all-btn">🛑 STOP CURRENT SOUND</button>
+        <button id="clear-queue-btn">Clear Entire Queue</button>
+        
+        <h3>Current Queue:</h3>
+        <ul id="admin-queue-list"></ul>
+    </div>
+
+    <script type="module" src="admin.js"></script>
+</body>
+</html>
