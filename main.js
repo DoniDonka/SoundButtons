@@ -51,11 +51,29 @@ function onPlayerReady(event) {
 }
 
 function onPlayerStateChange(event) {
-    // Optional: handle events like ending a video to trigger the next in queue (mostly an admin task, but can be done here)
     if (event.data == YT.PlayerState.ENDED) {
-        // We could move to next video if this client is allowed, but better to let Admin handle it or do it globally via Cloud Functions.
-        // For simple setup, let's just let the first client that sees it end move the queue if needed, or leave it to admin.
-        console.log("Video ended");
+        console.log("Video ended, checking for next in queue...");
+        playNextInQueue();
+    }
+}
+
+async function playNextInQueue() {
+    // Use a basic lock so multiple clients don't trigger the same queue item delete simultaneously
+    // For a simple app, we'll just query the first item and try to play it.
+    const snapshot = await db.collection("queue").orderBy("timestamp").limit(1).get();
+    
+    if (!snapshot.empty) {
+        const nextVideoDoc = snapshot.docs[0];
+        const nextVideoData = nextVideoDoc.data();
+        
+        await db.collection("state").doc("playback").set({
+            videoId: nextVideoData.videoId,
+            status: 'playing'
+        });
+        
+        await db.collection("queue").doc(nextVideoDoc.id).delete();
+    } else {
+        db.collection("state").doc("playback").set({ status: 'stopped', videoId: '' });
     }
 }
 
@@ -99,7 +117,24 @@ function listenToQueue() {
         snapshot.forEach((doc) => {
             const item = doc.data();
             const li = document.createElement('li');
-            li.textContent = item.url; // Or fetch and show title
+            
+            const titleSpan = document.createElement('span');
+            titleSpan.textContent = item.title || item.url;
+            li.appendChild(titleSpan);
+            
+            const btnContainer = document.createElement('div');
+            
+            const playBtn = document.createElement('button');
+            playBtn.textContent = 'Play';
+            playBtn.style.backgroundColor = '#28a745'; // Green for play
+            playBtn.onclick = async () => {
+                // Play this immediately and remove it from the queue
+                await db.collection("state").doc("playback").set({
+                    videoId: item.videoId,
+                    status: 'playing'
+                });
+                db.collection("queue").doc(doc.id).delete();
+            };
             
             // Allow basic users to delete from queue
             const deleteBtn = document.createElement('button');
@@ -109,7 +144,9 @@ function listenToQueue() {
                 db.collection("queue").doc(doc.id).delete();
             };
             
-            li.appendChild(deleteBtn);
+            btnContainer.appendChild(playBtn);
+            btnContainer.appendChild(deleteBtn);
+            li.appendChild(btnContainer);
             queueList.appendChild(li);
         });
     });
@@ -117,15 +154,28 @@ function listenToQueue() {
 
 
 // UI Event Listeners
-document.getElementById('queueBtn').addEventListener('click', () => {
+document.getElementById('queueBtn').addEventListener('click', async () => {
     const linkInput = document.getElementById('youtubeLink');
     const url = linkInput.value.trim();
     if (url) {
         const videoId = extractVideoId(url);
         if (videoId) {
+            // Attempt to get the video title
+            let title = url;
+            try {
+                const response = await fetch(`https://noembed.com/embed?url=${url}`);
+                const data = await response.json();
+                if (data.title) {
+                    title = data.title;
+                }
+            } catch (e) {
+                console.error("Could not fetch title", e);
+            }
+
             db.collection("queue").add({
                 videoId: videoId,
                 url: url,
+                title: title,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
                 linkInput.value = ''; // clear input
@@ -137,10 +187,29 @@ document.getElementById('queueBtn').addEventListener('click', () => {
     }
 });
 
-document.getElementById('delayBtn').addEventListener('click', () => {
-    // Custom logic for delay. e.g., delaying the current video play by a few seconds.
-    console.log("Delay button clicked - implement specific delay logic if needed.");
-    alert("Delay feature placeholder.");
+document.getElementById('playNowBtn').addEventListener('click', async () => {
+    const linkInput = document.getElementById('youtubeLink');
+    const url = linkInput.value.trim();
+    if (url) {
+        const videoId = extractVideoId(url);
+        if (videoId) {
+            db.collection("state").doc("playback").set({
+                videoId: videoId,
+                status: 'playing'
+            }).then(() => {
+                linkInput.value = '';
+            });
+        } else {
+            alert("Invalid YouTube URL");
+        }
+    } else {
+        // If input is empty, just send a play command to resume current video
+        db.collection("state").doc("playback").set({ status: 'playing' }, { merge: true });
+    }
+});
+
+document.getElementById('stopMainBtn').addEventListener('click', () => {
+    db.collection("state").doc("playback").set({ status: 'stopped', videoId: '' }, { merge: true });
 });
 
 // Helper Function
