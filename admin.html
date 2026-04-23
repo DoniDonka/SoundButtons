@@ -1,172 +1,374 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <title>Admin Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin — Soundboard Supreme</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        * {
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        :root {
+            --bg: #080a0f;
+            --surface: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.08);
+            --accent: #00e5ff;
+            --accent-dim: rgba(0,229,255,0.12);
+            --accent-glow: 0 0 20px rgba(0,229,255,0.35);
+            --danger: #ff4757;
+            --warning: #ffc800;
+            --success: #22c55e;
+            --text: #e8eaf0;
+            --muted: #4a5068;
         }
 
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            background-color: #f4f6f8;
-            color: #333;
-            margin: 0;
-            padding: 40px 20px;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+            background-image: radial-gradient(ellipse 60% 40% at 20% 0%, rgba(0,229,255,0.05) 0%, transparent 60%);
         }
 
         .container {
-            background: #ffffff;
             width: 100%;
-            max-width: 800px;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-
-        h1 {
-            margin-top: 0;
-            font-size: 24px;
-            color: #111;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 15px;
-        }
-
-        .form-group {
+            max-width: 700px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 20px;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 32px;
+            letter-spacing: 3px;
+            color: var(--accent);
+            text-shadow: var(--accent-glow);
+        }
+
+        .admin-badge {
+            background: rgba(255,200,0,0.1);
+            border: 1px solid rgba(255,200,0,0.3);
+            color: var(--warning);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* ── PANELS ── */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .section-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--muted);
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        /* ── LOGIN ── */
+        #login-section .panel {
+            max-width: 420px;
+            margin: 0 auto;
+        }
+
+        #login-section h2 {
+            font-size: 20px;
+            font-weight: 600;
             margin-bottom: 20px;
         }
 
-        input {
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+        .form-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        input[type="email"], input[type="password"], input[type="text"] {
+            width: 100%;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 14px 18px;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
             font-size: 15px;
+            outline: none;
+            transition: border 0.2s, box-shadow 0.2s;
         }
 
-        button {
-            background: #000;
-            color: #fff;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 6px;
-            font-weight: 600;
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: var(--accent-glow);
+        }
+
+        input::placeholder { color: var(--muted); }
+
+        /* ── BUTTONS ── */
+        .btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
-            transition: 0.2s;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            white-space: nowrap;
         }
 
-        button:hover {
-            background: #333;
+        .btn:hover {
+            background: rgba(255,255,255,0.09);
+            border-color: var(--accent);
         }
 
-        button.danger {
-            background: #dc3545;
-        }
-
-        button.danger:hover {
-            background: #c82333;
-        }
-
-        button.outline {
-            background: transparent;
+        .btn-primary {
+            background: var(--accent);
             color: #000;
-            border: 1px solid #000;
+            border: none;
+            font-weight: 600;
+            box-shadow: var(--accent-glow);
         }
 
-        button.outline:hover {
-            background: #f0f0f0;
+        .btn-primary:hover {
+            filter: brightness(1.15);
         }
 
+        .btn-danger {
+            background: rgba(255,71,87,0.08);
+            border-color: rgba(255,71,87,0.25);
+            color: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+            color: #fff;
+            box-shadow: 0 0 20px rgba(255,71,87,0.4);
+        }
+
+        .btn-pause {
+            background: rgba(255,200,0,0.08);
+            border-color: rgba(255,200,0,0.25);
+            color: var(--warning);
+        }
+
+        .btn-pause:hover {
+            background: rgba(255,200,0,0.2);
+        }
+
+        .btn-success {
+            background: rgba(34,197,94,0.08);
+            border-color: rgba(34,197,94,0.25);
+            color: var(--success);
+        }
+
+        .btn-success:hover {
+            background: rgba(34,197,94,0.2);
+        }
+
+        /* ── NOW PLAYING BANNER ── */
+        .np-banner {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+        }
+
+        .np-banner .np-label {
+            font-size: 11px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        #admin-np {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* ── CONTROL GRID ── */
         .control-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
             gap: 10px;
-            margin-bottom: 30px;
         }
 
-        .np-banner {
-            background: #eef2f5;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #000;
-        }
-
-        ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        li {
+        /* ── OVERRIDE ── */
+        .input-row {
             display: flex;
-            justify-content: space-between;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .input-row input { flex: 1; }
+
+        /* ── QUEUE LIST ── */
+        #admin-queue-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 320px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        #admin-queue-list::-webkit-scrollbar { width: 4px; }
+        #admin-queue-list::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+
+        #admin-queue-list li {
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 13px 16px;
+            display: flex;
             align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid #eee;
+            gap: 12px;
+            animation: fadeIn 0.3s ease;
         }
 
-        .delete-btn {
+        #admin-queue-list li:hover { border-color: rgba(255,255,255,0.15); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .q-title { flex: 1; font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .q-empty { text-align: center; color: var(--muted); font-size: 14px; padding: 20px; }
+
+        .del-btn {
             background: transparent;
-            color: #dc3545;
-            padding: 6px 12px;
+            border: 1px solid rgba(255,71,87,0.3);
+            color: var(--danger);
+            padding: 5px 10px;
+            border-radius: 6px;
             font-size: 12px;
-            border: 1px solid #dc3545;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
         }
 
-        .delete-btn:hover {
-            background: #dc3545;
-            color: white;
+        .del-btn:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        #error-msg {
+            color: var(--danger);
+            font-size: 14px;
+            text-align: center;
+            min-height: 20px;
+            margin-top: 8px;
+        }
+
+        #logout-btn {
+            font-size: 13px;
+            padding: 8px 16px;
         }
     </style>
 </head>
-
 <body>
 
-    <div id="login-section" class="container">
-        <h1>Admin Authentication</h1>
-        <div class="form-group">
-            <input type="email" id="email" placeholder="Admin Email">
-            <input type="password" id="password" placeholder="Password">
-            <button id="login-btn">Sign In</button>
+<div class="container">
+
+    <!-- LOGIN -->
+    <div id="login-section">
+        <div class="header">
+            <h1>SOUNDBOARD ADMIN</h1>
+            <span class="admin-badge">🔒 Restricted</span>
+        </div>
+        <div class="panel">
+            <h2>Sign In</h2>
+            <div class="form-stack">
+                <input type="email" id="email" placeholder="Admin email">
+                <input type="password" id="password" placeholder="Password">
+                <button id="login-btn" class="btn btn-primary">Sign In</button>
+                <div id="error-msg"></div>
+            </div>
         </div>
     </div>
 
-    <div id="control-panel" class="container" style="display: none;">
-        <h1>Dashboard Controls</h1>
-
-        <div class="np-banner">
-            <strong style="display:block; font-size:12px; color:#666;">NOW PLAYING</strong>
-            <span id="admin-np" style="font-size: 18px; font-weight: 600;">None</span>
-        </div>
-
-        <div class="control-grid">
-            <button id="play-next-btn">⏭️ Skip to Next</button>
-            <button id="pause-btn" class="outline">⏸️ Pause Global</button>
-            <button id="resume-btn" class="outline">▶️ Resume</button>
-            <button id="stop-all-btn" class="danger">⏹️ Stop Audio</button>
-            <button id="clear-queue-btn" class="danger">🗑️ Clear Queue</button>
-        </div>
-
-        <div style="margin-bottom: 30px;">
-            <h3>Emergency Override</h3>
-            <div style="display:flex; gap:10px;">
-                <input type="text" id="override-link" placeholder="YouTube URL" style="flex:1;">
-                <button id="override-btn">Play Instantly</button>
+    <!-- CONTROL PANEL -->
+    <div id="control-panel" style="display:none;">
+        <div class="header">
+            <h1>SOUNDBOARD ADMIN</h1>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <span class="admin-badge">✅ Authenticated</span>
+                <button id="logout-btn" class="btn btn-danger">Log Out</button>
             </div>
         </div>
 
-        <h3>Queue Management</h3>
-        <ul id="admin-queue-list"></ul>
+        <!-- Now Playing -->
+        <div class="panel">
+            <div class="np-banner">
+                <div class="np-label">▶ Now Playing</div>
+                <div id="admin-np">Nothing playing</div>
+            </div>
+
+            <div class="section-label">Playback Controls</div>
+            <div class="control-grid">
+                <button id="pause-btn" class="btn btn-pause">⏸ Pause</button>
+                <button id="resume-btn" class="btn btn-success">▶ Resume</button>
+                <button id="play-next-btn" class="btn">⏭ Skip</button>
+                <button id="stop-all-btn" class="btn btn-danger">⏹ Stop All</button>
+                <button id="clear-queue-btn" class="btn btn-danger">🗑 Clear Queue</button>
+            </div>
+        </div>
+
+        <!-- Emergency Override -->
+        <div class="panel">
+            <div class="section-label">Emergency Override — Play Instantly</div>
+            <div class="input-row">
+                <input type="text" id="override-link" placeholder="Paste YouTube URL...">
+                <button id="override-btn" class="btn btn-primary">▶ Play Now</button>
+            </div>
+        </div>
+
+        <!-- Queue Management -->
+        <div class="panel">
+            <div class="section-label">Queue Management</div>
+            <ul id="admin-queue-list">
+                <li class="q-empty">Queue is empty</li>
+            </ul>
+        </div>
     </div>
 
-    <script type="module" src="admin.js"></script>
-</body>
+</div>
 
+<script type="module" src="admin.js"></script>
+</body>
 </html>
