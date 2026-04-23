@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soundboard Admin</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <h1>Admin Panel</h1>
+    
+    <div id="loginSection">
+        <input type="email" id="email" placeholder="Admin Email">
+        <input type="password" id="password" placeholder="Admin Password">
+        <button id="loginBtn">Login</button>
+    </div>
+
+    <div id="adminControls" style="display: none;">
+        <h2>Controls</h2>
+        <button id="pauseBtn">Pause</button>
+        <button id="playBtn">Play</button>
+        <button id="stopBtn">Stop Playing</button>
+        <button id="skipBtn">Skip to Next</button>
+        
+        <h2>Manage Queue</h2>
+        <ul id="adminQueueList"></ul>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>

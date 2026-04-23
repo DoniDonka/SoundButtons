@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soundboard Queue</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <h1>Soundboard Queue</h1>
+    <p><strong>Make sure to have full volume on!</strong></p>
+    
+    <div id="player"></div>
+
+    <div>
+        <input type="text" id="youtubeLink" placeholder="Insert YouTube link here...">
+        <button id="queueBtn">Queue</button>
+        <button id="delayBtn">Delay</button>
+    </div>
+
+    <h2>Queue</h2>
+    <ul id="queueList"></ul>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
