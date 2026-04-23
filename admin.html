@@ -3,49 +3,166 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Telemetry Deck</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Admin Dashboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f8;
+            color: #333;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background: #ffffff;
+            width: 100%;
+            max-width: 800px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 24px;
+            color: #111;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        button {
+            background: #000;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #333;
+        }
+
+        button.danger {
+            background: #dc3545;
+        }
+
+        button.danger:hover {
+            background: #c82333;
+        }
+
+        button.outline {
+            background: transparent;
+            color: #000;
+            border: 1px solid #000;
+        }
+
+        button.outline:hover {
+            background: #f0f0f0;
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .np-banner {
+            background: #eef2f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #000;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .delete-btn {
+            background: transparent;
+            color: #dc3545;
+            padding: 6px 12px;
+            font-size: 12px;
+            border: 1px solid #dc3545;
+        }
+
+        .delete-btn:hover {
+            background: #dc3545;
+            color: white;
+        }
+    </style>
 </head>
 
 <body>
 
-    <div id="login-section" class="glass-panel" style="max-width: 400px; text-align: center;">
-        <h2 style="margin-bottom: 20px; color: var(--danger);">RESTRICTED ACCESS</h2>
-        <input type="email" id="email" placeholder="Administrator Email" style="margin-bottom: 15px; width: 100%;">
-        <input type="password" id="password" placeholder="Passcode" style="margin-bottom: 20px; width: 100%;">
-        <button id="login-btn" class="btn-primary" style="width: 100%;">Authenticate</button>
+    <div id="login-section" class="container">
+        <h1>Admin Authentication</h1>
+        <div class="form-group">
+            <input type="email" id="email" placeholder="Admin Email">
+            <input type="password" id="password" placeholder="Password">
+            <button id="login-btn">Sign In</button>
+        </div>
     </div>
 
-    <div id="control-panel" class="glass-panel" style="display: none; max-width: 800px;">
-        <header>
-            <div class="sys-title">Command Overview</div>
-            <span id="admin-status" class="status-label" style="color: var(--success);">System Online</span>
-        </header>
+    <div id="control-panel" class="container" style="display: none;">
+        <h1>Dashboard Controls</h1>
 
-        <div class="status-display">
-            <span class="status-label">Active Transmission</span>
-            <span id="admin-np" class="status-track">None</span>
+        <div class="np-banner">
+            <strong style="display:block; font-size:12px; color:#666;">NOW PLAYING</strong>
+            <span id="admin-np" style="font-size: 18px; font-weight: 600;">None</span>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px;">
-            <button id="play-next-btn" class="btn-secondary">⏭️ Force Next Track</button>
-            <button id="pause-btn" class="btn-secondary">⏸️ Global Pause</button>
-            <button id="resume-btn" class="btn-secondary">▶️ Global Resume</button>
-            <button id="stop-all-btn" class="btn-danger">⏹️ KILL AUDIO</button>
+        <div class="control-grid">
+            <button id="play-next-btn">⏭️ Skip to Next</button>
+            <button id="pause-btn" class="outline">⏸️ Pause Global</button>
+            <button id="resume-btn" class="outline">▶️ Resume</button>
+            <button id="stop-all-btn" class="danger">⏹️ Stop Audio</button>
+            <button id="clear-queue-btn" class="danger">🗑️ Clear Queue</button>
         </div>
 
-        <div class="control-group"
-            style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; border: 1px solid var(--panel-border);">
-            <input type="text" id="override-link" placeholder="Instant Override URL...">
-            <button id="override-btn" class="btn-danger" style="box-shadow: none;">EXECUTE OVERRIDE</button>
+        <div style="margin-bottom: 30px;">
+            <h3>Emergency Override</h3>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="override-link" placeholder="YouTube URL" style="flex:1;">
+                <button id="override-btn">Play Instantly</button>
+            </div>
         </div>
 
-        <header style="margin-top: 30px; padding-bottom: 10px;">
-            <div class="sys-title">Queue Manager</div>
-            <button id="clear-queue-btn" class="btn-danger" style="padding: 10px 15px; font-size: 0.8rem;">Purge
-                Queue</button>
-        </header>
+        <h3>Queue Management</h3>
         <ul id="admin-queue-list"></ul>
     </div>
 

@@ -4,62 +4,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Audio Telemetry</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Soundboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #0f0f0f;
+            color: #f1f1f1;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        #join-screen {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 15, 15, 0.98);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .primary-btn {
+            background: #3ea6ff;
+            color: #0f0f0f;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .primary-btn:hover {
+            background: #65b8ff;
+        }
+
+        .secondary-btn {
+            background: transparent;
+            color: #f1f1f1;
+            border: 1px solid #555;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            flex: 1;
+        }
+
+        .secondary-btn:hover {
+            background: #333;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 700px;
+            padding: 40px 20px;
+        }
+
+        .header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin: 0 0 8px 0;
+        }
+
+        .header p {
+            color: #aaaaaa;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .card {
+            background: #212121;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+
+        .now-playing-label {
+            color: #aaaaaa;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .now-playing-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #3ea6ff;
+            word-break: break-all;
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background: #0f0f0f;
+            border: 1px solid #333;
+            color: white;
+            padding: 14px 16px;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: #3ea6ff;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .queue-header {
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            background: #181818;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #2a2a2a;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        li::before {
+            content: "🎵";
+            margin-right: 12px;
+            font-size: 12px;
+        }
+
+        /* FIX: Hide player off-screen instead of display: none */
+        #player {
+            position: absolute;
+            left: -9999px;
+            width: 1px;
+            height: 1px;
+        }
+    </style>
 </head>
 
 <body>
 
-    <div id="join-modal" class="modal-overlay active">
-        <div class="modal-content">
-            <h2 style="color: var(--danger); margin-bottom: 10px;">AUDIO SUBSYSTEM OFFLINE</h2>
-            <p style="color: var(--text-muted); margin-bottom: 30px;">Browser policy requires manual activation. Ensure
-                volume is turned up before initializing.</p>
-            <button id="join-btn" class="btn-primary" style="width: 100%; font-size: 1.2rem;">Initialize Audio
-                Protocol</button>
-        </div>
+    <div id="join-screen">
+        <h2 style="margin-bottom: 24px;">Audio Setup Required</h2>
+        <button id="join-btn" class="primary-btn">Connect & Enable Audio</button>
     </div>
 
-    <div id="settings-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2 style="margin-bottom: 20px;">System Preferences</h2>
-            <div style="text-align: left; margin-bottom: 20px;">
-                <label class="status-label">UI Theme</label>
-                <select id="theme-selector">
-                    <option value="default">ETS2 Night Drive (Cyan)</option>
-                    <option value="amber-telemetry">Amber Dashboard (Orange)</option>
-                    <option value="stealth-red">Stealth Protocol (Red)</option>
-                </select>
+    <div class="main-container">
+        <div class="header">
+            <h1>Shared Soundboard</h1>
+            <p>Paste a YouTube link to add to the global queue.</p>
+        </div>
+
+        <div class="card">
+            <div class="now-playing-label">Currently Playing</div>
+            <div class="now-playing-title" id="np-title">Waiting for audio...</div>
+
+            <div class="controls-row">
+                <button id="user-play-pause-btn" class="secondary-btn">⏸️ Pause</button>
+                <button id="user-skip-btn" class="secondary-btn">⏭️ Skip Next</button>
             </div>
-            <button id="close-settings" class="btn-secondary" style="width: 100%;">Save & Close</button>
+
+            <div class="volume-control">
+                <span>🔊 Local Volume:</span>
+                <input type="range" id="vol-slider" min="0" max="100" value="100">
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="yt-link" placeholder="Paste YouTube URL here...">
+                <button id="queue-btn" class="primary-btn">Queue Audio</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="queue-header">Up Next</div>
+            <ul id="queue-list">
+                <li style="color: #666; justify-content: center;">Queue is empty</li>
+            </ul>
         </div>
     </div>
 
-    <div class="glass-panel">
-        <header>
-            <div class="sys-title">Audio Telemetry Unit</div>
-            <button id="open-settings" class="btn-secondary">⚙️ Settings</button>
-        </header>
-
-        <div id="status-box" class="status-display">
-            <span class="status-label">Now Broadcasting</span>
-            <span id="np-title" class="status-track">Awaiting Input...</span>
-            <div class="audio-waves"></div>
-        </div>
-
-        <div class="control-group">
-            <input type="text" id="yt-link" placeholder="Enter YouTube URL...">
-            <button id="queue-btn" class="btn-primary">Transmit ⚡</button>
-        </div>
-
-        <h3 class="status-label"
-            style="margin-top: 30px; border-bottom: 1px solid var(--panel-border); padding-bottom: 10px;">Transmission
-            Queue</h3>
-        <ul id="queue-list"></ul>
-    </div>
-
-    <div id="player" style="display: none;"></div>
-
+    <div id="player"></div>
     <script type="module" src="app.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
 </body>
