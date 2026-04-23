@@ -2,12 +2,13 @@
 
 // TODO: Replace with your actual Firebase project configuration
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyAfCititqgz6H03Bg3W4bZbTDp4v-WpH6Y",
+  authDomain: "soundbuttons-36b5c.firebaseapp.com",
+  projectId: "soundbuttons-36b5c",
+  storageBucket: "soundbuttons-36b5c.firebasestorage.app",
+  messagingSenderId: "666242287540",
+  appId: "1:666242287540:web:1677f3ae27b2210e7e14e1",
+  measurementId: "G-M89D5FH56N"
 };
 
 // Initialize Firebase
