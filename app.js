@@ -19,16 +19,14 @@ let ytPlayer = null;
 let audioUnlocked = false;
 let currentVideoData = null;
 let currentlyLoadedVideoId = null;
-let pendingVideoData = null; // stores Firebase data received before audio unlocked
+let pendingVideoData = null;
 
 // ── YOUTUBE PLAYER SETUP ──
-// The YT API script loaded in HTML will call this when ready.
-// We expose it on window so the non-module script can reach it.
 window.onYouTubeIframeAPIReady = function () {
     ytPlayer = new YT.Player('player', {
         height: '1',
         width: '1',
-        videoId: 'jNQXAC9IVRw', // "Me at the zoo" — tiny real video to unlock audio context
+        videoId: 'jNQXAC9IVRw',
         playerVars: {
             autoplay: 0,
             controls: 0,
@@ -42,12 +40,9 @@ window.onYouTubeIframeAPIReady = function () {
     });
 };
 
-function onPlayerReady() {
-    // Player is ready — nothing to auto-play yet
-}
+function onPlayerReady() {}
 
 function onPlayerStateChange(event) {
-    // When a video ends (state = 0), auto-advance to the next in queue
     if (event.data === YT.PlayerState.ENDED) {
         advanceQueue();
     }
@@ -69,8 +64,22 @@ function advanceQueue() {
 
 // ── AUDIO UNLOCK ──
 document.getElementById('join-btn').addEventListener('click', () => {
+    const overlay = document.getElementById('join-screen');
+
+    const dismiss = () => {
+        audioUnlocked = true;
+        overlay.style.opacity = '0';
+        overlay.style.transition = 'opacity 0.4s ease';
+        setTimeout(() => { overlay.style.display = 'none'; }, 400);
+        if (pendingVideoData) {
+            applyVideoState(pendingVideoData);
+            pendingVideoData = null;
+        }
+    };
+
     if (!ytPlayer || typeof ytPlayer.playVideo !== 'function') {
-        alert("YouTube API is still loading. Please wait a moment and try again.");
+        // API not ready yet — dismiss silently, audio will work once player loads
+        dismiss();
         return;
     }
 
@@ -78,22 +87,9 @@ document.getElementById('join-btn').addEventListener('click', () => {
     ytPlayer.setVolume(100);
     ytPlayer.playVideo();
 
-    // 600ms is enough to trigger the browser's audio context unlock
     setTimeout(() => {
         ytPlayer.stopVideo();
-        audioUnlocked = true;
-
-        // Fade out & hide overlay
-        const overlay = document.getElementById('join-screen');
-        overlay.style.opacity = '0';
-        overlay.style.transition = 'opacity 0.4s ease';
-        setTimeout(() => { overlay.style.display = 'none'; }, 400);
-
-        // If Firebase already sent us data while we were on the overlay, apply it now
-        if (pendingVideoData) {
-            applyVideoState(pendingVideoData);
-            pendingVideoData = null;
-        }
+        dismiss();
     }, 600);
 });
 
@@ -133,10 +129,8 @@ document.getElementById('queue-btn').addEventListener('click', async () => {
 
     const snapshot = await get(child(ref(db), 'nowPlaying'));
     if (!snapshot.exists()) {
-        // Nothing playing — go straight to now playing
         await set(ref(db, 'nowPlaying'), { videoId, title, state: 'playing' });
     } else {
-        // Something already playing — add to queue
         await push(ref(db, 'queue'), { videoId, title });
     }
 
@@ -145,7 +139,6 @@ document.getElementById('queue-btn').addEventListener('click', async () => {
     btn.disabled = false;
 });
 
-// Allow Enter key to add to queue
 document.getElementById('yt-link').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') document.getElementById('queue-btn').click();
 });
@@ -179,7 +172,6 @@ function applyVideoState(data) {
         if (currentlyLoadedVideoId !== data.videoId) {
             currentlyLoadedVideoId = data.videoId;
             ytPlayer.loadVideoById(data.videoId);
-            // loadVideoById starts playing automatically — we'll pause below if needed
         }
 
         if (data.state === 'playing') {
@@ -192,7 +184,6 @@ function applyVideoState(data) {
             ppBtn.classList.add('paused');
         }
     } else {
-        // Nothing playing
         npTitle.textContent = 'Silence...';
         ppBtn.textContent = '⏸ Pause';
         ppBtn.classList.remove('paused');
@@ -209,9 +200,7 @@ onValue(ref(db, 'nowPlaying'), (snapshot) => {
     if (audioUnlocked) {
         applyVideoState(data);
     } else {
-        // Store it — we'll apply it once user hits "Connect Audio"
         pendingVideoData = data;
-        // Still update the title on the (hidden) page
         if (data) document.getElementById('np-title').textContent = data.title;
     }
 });
