@@ -15,6 +15,8 @@
             --accent-dim: rgba(0,229,255,0.12);
             --accent-glow: 0 0 20px rgba(0,229,255,0.35);
             --danger: #ff4757;
+            --warning: #ffc800;
+            --success: #22c55e;
             --text: #e8eaf0;
             --muted: #4a5068;
         }
@@ -60,17 +62,10 @@
             line-height: 1;
         }
 
-        #join-screen .sub {
-            color: var(--muted);
-            font-size: 15px;
-            letter-spacing: 1px;
-            text-align: center;
-        }
-
         .note-badge {
             background: rgba(255,200,0,0.1);
             border: 1px solid rgba(255,200,0,0.3);
-            color: #ffc800;
+            color: var(--warning);
             padding: 10px 20px;
             border-radius: 8px;
             font-size: 14px;
@@ -185,6 +180,16 @@
             min-height: 30px;
         }
 
+        /* countdown badge shown when delay is active */
+        #delay-countdown {
+            display: none;
+            margin-top: 8px;
+            font-size: 13px;
+            color: var(--warning);
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
         /* ── CONTROLS ── */
         .controls {
             display: flex;
@@ -195,11 +200,11 @@
 
         .btn {
             flex: 1;
-            min-width: 100px;
+            min-width: 90px;
             background: var(--surface);
             border: 1px solid var(--border);
             color: var(--text);
-            padding: 12px 16px;
+            padding: 12px 14px;
             border-radius: 10px;
             font-family: 'DM Sans', sans-serif;
             font-size: 14px;
@@ -209,16 +214,27 @@
             white-space: nowrap;
         }
 
-        .btn:hover {
+        .btn:hover:not(:disabled) {
             background: rgba(255,255,255,0.09);
             border-color: var(--accent);
             box-shadow: var(--accent-glow);
         }
 
-        .btn.paused {
-            background: rgba(255,71,87,0.15);
-            border-color: var(--danger);
-            color: var(--danger);
+        .btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .btn-resume {
+            background: rgba(34,197,94,0.1);
+            border-color: rgba(34,197,94,0.3);
+            color: var(--success);
+        }
+
+        .btn-resume:hover:not(:disabled) {
+            background: rgba(34,197,94,0.25);
+            border-color: var(--success);
+            box-shadow: 0 0 16px rgba(34,197,94,0.3);
         }
 
         .btn-stop {
@@ -227,20 +243,172 @@
             color: var(--danger);
         }
 
-        .btn-stop:hover {
+        .btn-stop:hover:not(:disabled) {
             background: var(--danger);
             color: #fff;
             border-color: var(--danger);
             box-shadow: 0 0 20px rgba(255,71,87,0.4);
         }
 
+        .btn-delay {
+            background: rgba(255,200,0,0.08);
+            border-color: rgba(255,200,0,0.25);
+            color: var(--warning);
+        }
+
+        .btn-delay:hover:not(:disabled) {
+            background: rgba(255,200,0,0.2);
+            border-color: var(--warning);
+        }
+
+        .btn-delay.active {
+            background: rgba(255,200,0,0.2);
+            border-color: var(--warning);
+            animation: pulse-warn 1.5s infinite;
+        }
+
+        @keyframes pulse-warn {
+            0%, 100% { box-shadow: 0 0 0 rgba(255,200,0,0); }
+            50% { box-shadow: 0 0 12px rgba(255,200,0,0.4); }
+        }
+
+        /* ── DELAY MODAL ── */
+        #delay-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(8,10,15,0.85);
+            backdrop-filter: blur(16px);
+            z-index: 8888;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #delay-modal.open { display: flex; }
+
+        .modal-box {
+            background: #0f1119;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 36px;
+            width: 90%;
+            max-width: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .modal-box h3 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 26px;
+            letter-spacing: 2px;
+            color: var(--accent);
+        }
+
+        .modal-box p {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .delay-presets {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .preset-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px;
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .custom-delay-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .custom-delay-row input {
+            flex: 1;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .custom-delay-row input:focus { border-color: var(--accent); }
+        .custom-delay-row input::placeholder { color: var(--muted); }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-modal-cancel {
+            flex: 1;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-modal-cancel:hover { border-color: var(--text); color: var(--text); }
+
+        .btn-modal-confirm {
+            flex: 2;
+            background: var(--warning);
+            color: #000;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-modal-confirm:hover { filter: brightness(1.1); }
+
         /* ── INPUT ── */
+        .section-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--muted);
+            font-weight: 600;
+            margin-bottom: 14px;
+        }
+
         .input-row {
             display: flex;
             gap: 10px;
         }
 
-        input[type="text"], input[type="email"], input[type="password"] {
+        input[type="text"] {
             flex: 1;
             background: rgba(0,0,0,0.4);
             border: 1px solid var(--border);
@@ -253,7 +421,7 @@
             transition: border 0.2s, box-shadow 0.2s;
         }
 
-        input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
+        input[type="text"]:focus {
             border-color: var(--accent);
             box-shadow: var(--accent-glow);
         }
@@ -274,26 +442,10 @@
             white-space: nowrap;
         }
 
-        .btn-add:hover {
-            filter: brightness(1.15);
-            box-shadow: var(--accent-glow);
-        }
-
-        .btn-add:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .btn-add:hover { filter: brightness(1.15); box-shadow: var(--accent-glow); }
+        .btn-add:disabled { opacity: 0.5; cursor: not-allowed; }
 
         /* ── QUEUE ── */
-        .section-label {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            color: var(--muted);
-            font-weight: 600;
-            margin-bottom: 14px;
-        }
-
         #queue-list {
             list-style: none;
             display: flex;
@@ -323,28 +475,9 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .q-num {
-            color: var(--muted);
-            font-size: 12px;
-            font-weight: 600;
-            min-width: 20px;
-        }
-
-        .q-title {
-            flex: 1;
-            font-size: 14px;
-            font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .q-empty {
-            text-align: center;
-            color: var(--muted);
-            font-size: 14px;
-            padding: 20px;
-        }
+        .q-num { color: var(--muted); font-size: 12px; font-weight: 600; min-width: 20px; }
+        .q-title { flex: 1; font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .q-empty { text-align: center; color: var(--muted); font-size: 14px; padding: 20px; list-style: none; }
 
         /* Hidden YT player */
         .yt-hidden {
@@ -352,8 +485,7 @@
             width: 1px;
             height: 1px;
             opacity: 0.01;
-            bottom: 0;
-            right: 0;
+            bottom: 0; right: 0;
             pointer-events: none;
             z-index: -1;
         }
@@ -364,9 +496,31 @@
 <!-- JOIN OVERLAY -->
 <div id="join-screen">
     <div class="big-title">SOUNDBOARD<br>SUPREME</div>
-    <div class="note-badge">🔊 Make sure your volume is turned up!</div>
-    <p class="sub">Click below to sync your audio engine</p>
+    <div class="note-badge">🔊 Turn your volume up before joining!</div>
     <button id="join-btn" class="join-btn">CONNECT AUDIO</button>
+</div>
+
+<!-- DELAY MODAL -->
+<div id="delay-modal">
+    <div class="modal-box">
+        <h3>⏱ Set Delay</h3>
+        <p>Choose how long to wait before the next queued sound plays.</p>
+        <div class="delay-presets">
+            <button class="preset-btn" data-seconds="10">10 sec</button>
+            <button class="preset-btn" data-seconds="30">30 sec</button>
+            <button class="preset-btn" data-seconds="60">1 min</button>
+            <button class="preset-btn" data-seconds="120">2 min</button>
+            <button class="preset-btn" data-seconds="300">5 min</button>
+            <button class="preset-btn" data-seconds="600">10 min</button>
+        </div>
+        <div class="custom-delay-row">
+            <input type="text" id="custom-delay-input" placeholder="Custom (seconds)">
+        </div>
+        <div class="modal-actions">
+            <button class="btn-modal-cancel" id="delay-cancel">Cancel</button>
+            <button class="btn-modal-confirm" id="delay-confirm">Set Delay</button>
+        </div>
+    </div>
 </div>
 
 <!-- MAIN APP -->
@@ -380,10 +534,14 @@
     <div class="panel now-playing">
         <div class="np-label">▶ Now Playing</div>
         <div id="np-title">Silence...</div>
+        <div id="delay-countdown"></div>
         <div class="controls">
-            <button id="public-play-pause" class="btn">⏸ Pause</button>
-            <button id="public-skip" class="btn">⏭ Skip</button>
-            <button id="public-stop" class="btn btn-stop">⏹ Stop All</button>
+            <button id="btn-play" class="btn">▶ Play</button>
+            <button id="btn-pause" class="btn">⏸ Pause</button>
+            <button id="btn-resume" class="btn btn-resume">↺ Resume</button>
+            <button id="btn-skip" class="btn">⏭ Skip</button>
+            <button id="btn-stop" class="btn btn-stop">⏹ Stop</button>
+            <button id="btn-delay" class="btn btn-delay">⏱ Delay</button>
         </div>
     </div>
 
@@ -405,12 +563,16 @@
     </div>
 </div>
 
-<!-- Hidden YT Player -->
+<!-- Hidden YT Player — MUST be visible to browser (opacity trick) -->
 <div class="yt-hidden">
     <div id="player"></div>
 </div>
 
-<!-- IMPORTANT: module script must come BEFORE the YT iframe API tag -->
+<!--
+    CRITICAL LOAD ORDER:
+    1. app.js as a module (registers window.onYouTubeIframeAPIReady)
+    2. YouTube IFrame API (calls window.onYouTubeIframeAPIReady when ready)
+-->
 <script type="module" src="app.js"></script>
 <script src="https://www.youtube.com/iframe_api"></script>
 
